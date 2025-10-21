@@ -1,152 +1,145 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 import Button from './Button';
 
-/**
- * Custom hook for managing tasks with localStorage persistence
- */
-const useLocalStorageTasks = () => {
-  // Initialize state from localStorage or with empty array
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem('tasks');
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
-
-  // Update localStorage when tasks change
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
-
-  // Add a new task
-  const addTask = (text) => {
-    if (text.trim()) {
-      setTasks([
-        ...tasks,
-        {
-          id: Date.now(),
-          text,
-          completed: false,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    }
-  };
-
-  // Toggle task completion status
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  // Delete a task
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-
-  return { tasks, addTask, toggleTask, deleteTask };
-};
-
-/**
- * TaskManager component for managing tasks
- */
 const TaskManager = () => {
-  const { tasks, addTask, toggleTask, deleteTask } = useLocalStorageTasks();
-  const [newTaskText, setNewTaskText] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [newTask, setNewTask] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState("All")
 
-  // Filter tasks based on selected filter
+  // GET- all tasks
+  useEffect(() => {
+    const saved = localStorage.getItem("tasks");
+    if (saved) {
+      const savedTasks =JSON.parse(saved);
+      setTasks(savedTasks)
+
+    }
+  }, [])
+
+
+  // SAVE- whenever tasks change,using a dependecy array
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks])
+
+  // CREATE-creating a task
+
+  const handleAddTask =()=>{
+    if(newTask.trim()==="")return;
+    const newTaskItem={
+      id:Date.now(),
+      text:newTask,
+      completed:false
+    };
+
+    setTasks([...tasks,newTaskItem]);
+      setNewTask("");
+  
+
+  }
+
+  // DELETE - a task
+
+  const handleDeleteTask=(id)=>{
+    const newList = tasks.filter((task)=>{
+      task.id !== id
+    });
+    setTasks(newList)
+
+  }
+
+
+  // TOGGLECOMPLETE TASK
+  const handleToggleComplete=(id)=>{
+    const updatedTasks = tasks.map((task)=>{
+      task.id === id ? {...task,completed:!task.completed}:task
+    });
+    setTasks(updatedTasks);
+
+  }
+// filter
   const filteredTasks = tasks.filter((task) => {
-    if (filter === 'active') return !task.completed;
-    if (filter === 'completed') return task.completed;
-    return true; // 'all' filter
+    if (filter === "Active") return !task.completed;
+    if (filter === "Completed") return task.completed;
+    return true; // for "All"
   });
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    addTask(newTaskText);
-    setNewTaskText('');
-  };
+
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-6">Task Manager</h2>
+    <div>
+      <div className="p-6 max-w-md mx-auto bg-white text-black shadow-md rounded">
+      <h1 className="text-2xl font-bold mb-4 text-center">Task Manager</h1>
 
-      {/* Task input form */}
-      <form onSubmit={handleSubmit} className="mb-6">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newTaskText}
-            onChange={(e) => setNewTaskText(e.target.value)}
-            placeholder="Add a new task..."
-            className="flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-          />
-          <Button type="submit" variant="primary">
-            Add Task
-          </Button>
-        </div>
-      </form>
-
-      {/* Filter buttons */}
+      {/* Input + Button */}
       <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Enter a new task..."
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          className="border p-2 rounded flex-grow"
+        />
         <Button
-          variant={filter === 'all' ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => setFilter('all')}
+        variant="primary"
+          onClick={handleAddTask}
+        >Add</Button>
+          
+      </div>
+
+      {/* Filter Buttons */}
+      <div className="flex justify-center gap-4 mb-4">
+        <Button
+        variant="primary"
+          className={`px-3 py-1 rounded ${
+            filter === "All" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+          onClick={() => setFilter("All")}
         >
           All
         </Button>
         <Button
-          variant={filter === 'active' ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => setFilter('active')}
+        variant="primary"
+          className={`px-3 py-1 rounded ${
+            filter === "Active" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+          onClick={() => setFilter("Active")}
         >
           Active
         </Button>
         <Button
-          variant={filter === 'completed' ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => setFilter('completed')}
+        variant="secondary"
+          className={`px-3 py-1 rounded ${
+            filter === "Completed" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+          onClick={() => setFilter("Completed")}
         >
           Completed
         </Button>
       </div>
 
-      {/* Task list */}
-      <ul className="space-y-2">
+      {/* Tasks List */}
+      <ul>
         {filteredTasks.length === 0 ? (
-          <li className="text-gray-500 dark:text-gray-400 text-center py-4">
-            No tasks found
-          </li>
+          <p className="text-center text-gray-500">No tasks to show</p>
         ) : (
           filteredTasks.map((task) => (
             <li
               key={task.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700"
+              className="flex justify-between items-center border-b py-2"
             >
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => toggleTask(task.id)}
-                  className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span
-                  className={`${
-                    task.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''
-                  }`}
-                >
-                  {task.text}
-                </span>
+              <div
+                onClick={() => handleToggleComplete(task.id)}
+                className={`flex-grow cursor-pointer ${
+                  task.completed ? "line-through text-gray-500" : ""
+                }`}
+              >
+                {task.text}
               </div>
               <Button
-                variant="danger"
-                size="sm"
-                onClick={() => deleteTask(task.id)}
-                aria-label="Delete task"
+              variant="danger"
+                onClick={() => handleDeleteTask(task.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded ml-2"
               >
                 Delete
               </Button>
@@ -154,15 +147,9 @@ const TaskManager = () => {
           ))
         )}
       </ul>
-
-      {/* Task stats */}
-      <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-        <p>
-          {tasks.filter((task) => !task.completed).length} tasks remaining
-        </p>
-      </div>
     </div>
-  );
-};
+    </div>
+  )
+}
 
-export default TaskManager; 
+export default TaskManager
