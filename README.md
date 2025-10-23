@@ -31,13 +31,6 @@ Viewing and managing active tasks.
 ![API Posts](./src/assets/apiposts.png)
 Displaying posts fetched from JSONPlaceholder API.
 
-###  Application Overview
-![Main Interface](./src/assets/image1.png)
-Main application interface.
-
-![Additional View](./src/assets/image2.png)
-Additional application view.
-
 ---
 
 ##  Features
