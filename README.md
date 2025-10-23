@@ -106,7 +106,7 @@ src/
 1. **Clone the repository**
    ```bash
    git clone https://github.com/PLP-MERN-Stack-Development/react-js-jsx-and-css-mastering-front-end-development-Topher254.git
-   cd week3-react-project
+   cd PLP-MERN-Stack-Development/react-js-jsx-and-css-mastering-front-end-development-Topher254
 ````
 
 2. **Install dependencies**
